@@ -4,6 +4,17 @@ import * as JWT_SECRET from '@repo/backend-common/config';
 
 const wss = new WebSocketServer({ port: 8080 });
 
+function checkUser(token: string): boolean {
+  const decoded = jwt.verify(token, JWT_SECRET.JWT_SECRET);
+ if (typeof decoded === 'string') {
+    return false;
+  }
+  if(!decoded || !decoded.userId){
+    return false;
+  }
+  return true;
+}
+
 wss.on('connection', function connection(ws, request) {
   const url = request.url;
   if (!url) {
@@ -12,16 +23,6 @@ wss.on('connection', function connection(ws, request) {
   }
   const params = new URLSearchParams(url.split('?')[1]);
   const token = params.get('token') || "";
-  const decoded = jwt.verify(token, JWT_SECRET.JWT_SECRET);
-  if (!decoded || !(decoded as JwtPayload).userId) {
-    ws.close();
-    return;
-  }
-
-
-  ws.on('message', function incoming(message) {
-    console.log('received: %s', message);
-    ws.send('Pong');
-  });
+ 
 
 });
