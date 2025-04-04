@@ -95,6 +95,31 @@ app.post("/room", authMiddleware, async (req, res) => {
     }
 })
 
+app.get("/chats/:roomId",  (req, res) => {
+    const roomId = Number(req.params.roomId);
+    if (!roomId) {
+        res.status(400).json({
+            message: "Room ID is required"
+        })
+        return;
+    }
+    prismaClient.chat.findMany({
+        where: {
+            roomId
+        },
+        orderBy: {
+            id: "desc"
+        },
+        take: 50
+    }).then((chats) => {
+        res.json(chats);
+    }).catch((e) => {
+        res.status(500).json({
+            message: "Internal server error"
+        })
+    })
+})
+
 
 app.listen(3001);
 
