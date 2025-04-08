@@ -29,8 +29,7 @@ export default async function InitDraw(canvas: HTMLCanvasElement, roomId: string
         let clicked = false;
         let startX = 0;
         let startY = 0;
-        console.log("I am here")
-       socket.onmessage = (event) => {
+        socket.onmessage = (event) => {
             const message = JSON.parse(event.data);
 
             if (message.type == "chat") {
@@ -49,14 +48,35 @@ export default async function InitDraw(canvas: HTMLCanvasElement, roomId: string
 
         canvas.addEventListener("mouseup", (e) => {
             clicked = false;
-            console.log("mouseup");
-            const shape: Shape = {
-                type: "rect",
-                x: startX,
-                y: startY,
-                width: e.clientX - startX,
-                height: e.clientY - startY
-            };
+            //@ts-ignore
+            const selectShape = window.shape;
+            let shape: Shape | null = null;
+            if (selectShape === "rect") {
+                shape = {
+                    type: "rect",
+                    x: startX,
+                    y: startY,
+                    width: e.clientX - startX,
+                    height: e.clientY - startY
+                };
+            }else if (selectShape === "circle") {
+                shape = {
+                    type: "circle",
+                    centerX: startX + (e.clientX - startX) / 2,
+                    centerY: startY + (e.clientY - startY) / 2,
+                    radius: Math.max(e.clientX - startX, e.clientY - startY) / 2
+                };
+            }
+            else{
+                shape = {
+                    type: "pencil",
+                    startX,
+                    startY,
+                    endX: e.clientX,
+                    endY: e.clientY
+                }
+            }
+            if (!shape) return;
             existingShapes.push(shape);
             socket.send(JSON.stringify({
                 type: "chat",
@@ -70,12 +90,22 @@ export default async function InitDraw(canvas: HTMLCanvasElement, roomId: string
       
         canvas.addEventListener("mousemove", (e) => {
             if (clicked) {
-            console.log(e.clientX, e.clientY);
             const width = e.clientX - startX;
             const height = e.clientY - startY;
             clearCanvas(existingShapes, ctx, canvas);
             ctx.strokeStyle = "white";
-            ctx.strokeRect(startX, startY, width, height);
+            //@ts-ignore
+            const selectShape = window.shape;
+            console.log("selectShape", selectShape);
+            if(selectShape === "rect") {
+                ctx.strokeRect(startX, startY, width, height);
+            }
+            else if(selectShape === "circle"){
+                ctx.beginPath();
+                ctx.arc(startX + width/ 2, startY + height/ 2, Math.max(width, height) / 2, 0, Math.PI * 2);
+                ctx.stroke();
+                ctx.closePath();
+            }
             }
         })
 }
