@@ -4,9 +4,10 @@ import * as JWT_SECRET from '@repo/backend-common/config';
 import { authMiddleware } from './middleware';
 import {CreateUserSchema, SignInSchema, CreateRoomSchema} from "@repo/common/types";
 import {prismaClient} from "@repo/db/client";
-
+import cors from 'cors';
 const app = express();
 app.use(express.json());
+app.use(cors());
 // import prismaClient from "@repo/db"; // Adjust the import based on your actual db package
 app.post("/signup", async (req, res) => {
     const userData = CreateUserSchema.safeParse(req.body);
@@ -95,29 +96,30 @@ app.post("/room", authMiddleware, async (req, res) => {
     }
 })
 
-app.get("/chats/:roomId",  (req, res) => {
-    const roomId = Number(req.params.roomId);
-    if (!roomId) {
-        res.status(400).json({
-            message: "Room ID is required"
+app.get("/chats/:roomId", async (req, res) => {
+    try {
+        const roomId = Number(req.params.roomId);
+        console.log(req.params.roomId);
+        const messages = await prismaClient.chat.findMany({
+            where: {
+                roomId: roomId
+            },
+            orderBy: {
+                id: "desc"
+            },
+            take: 1000
+        });
+
+        res.json({
+            messages
         })
-        return;
+    } catch(e) {
+        console.log(e);
+        res.json({
+            messages: []
+        })
     }
-    prismaClient.chat.findMany({
-        where: {
-            roomId
-        },
-        orderBy: {
-            id: "desc"
-        },
-        take: 50
-    }).then((chats) => {
-        res.json(chats);
-    }).catch((e) => {
-        res.status(500).json({
-            message: "Internal server error"
-        })
-    })
+    
 })
 
 
