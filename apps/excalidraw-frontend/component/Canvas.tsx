@@ -1,20 +1,19 @@
-import InitDraw from "@/draw";
 import { useEffect, useRef, useState } from "react";
 import IconButton from "./IconButton";
 import { Circle, Pencil, PencilIcon, RectangleHorizontalIcon } from "lucide-react";
-import { type } from "os";
+import { Game } from "@/draw/Game";
 
-type Shape = "rect" | "circle" | "line" | "pencil" | "eraser" | "text";
+export type Shapes = "rect" | "circle" | "line" | "pencil" | "eraser" | "text";
 
 export function Canvas({ roomId, socket }: { roomId: string; socket: WebSocket }) {
     const canvasRef = useRef<HTMLCanvasElement>(null);
+    const [game, setGame] = useState<Game>();
     const [dimensions, setDimensions] = useState({ width: window.innerWidth, height: window.innerHeight });
-    const [shape, setShape] = useState<Shape>("rect");
+    const [shape, setShape] = useState<Shapes>("rect");
 
     useEffect(() => {  
-        //@ts-ignore
-        window.shape = shape;
-    } , [shape]);
+        game?.setShape(shape);
+    } , [shape, game]);
 
     // Handle window resizing
     useEffect(() => {
@@ -32,11 +31,15 @@ export function Canvas({ roomId, socket }: { roomId: string; socket: WebSocket }
     }, []);
 
     useEffect(() => {
-        // Ensure the canvasRef is not null before calling InitDraw
         if (canvasRef.current) {
-            InitDraw(canvasRef.current, roomId, socket);
+            const g = new Game(canvasRef.current, roomId, socket);
+            setGame(g);
+
+            return () => {
+                g.destroy(); // Clean up the game instance on unmount
+            }
         }
-    }, [canvasRef]); // Make sure this re-runs if roomId or socket changes
+    }, [canvasRef]);
 
     return (
         <div style={
@@ -56,7 +59,7 @@ export function Canvas({ roomId, socket }: { roomId: string; socket: WebSocket }
     );
 }
 
-export function TopBar({roomId, shape, setShape}: {roomId: string, setShape: (shape: Shape) => void, shape: Shape}) {
+export function TopBar({roomId, shape, setShape}: {roomId: string, setShape: (shape: Shapes) => void, shape: Shapes}) {
     return (
         <div className="items-center justify-between p-4 bg-gray-800 text-white"
         style={{
