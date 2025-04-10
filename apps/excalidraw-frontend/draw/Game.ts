@@ -14,7 +14,7 @@ type Shape = {
     centerY: number;
     radius: number;
 } | {
-    type: "pencil";
+    type: "line";
     startX: number;
     startY: number;
     endX: number;
@@ -79,6 +79,13 @@ export class Game {
                 this.ctx.stroke();
                 this.ctx.closePath();                
             }
+            else if (shape.type === "line") {
+                this.ctx.beginPath();
+                this.ctx.moveTo(shape.startX, shape.startY);
+                this.ctx.lineTo(shape.endX, shape.endY);
+                this.ctx.stroke();
+                this.ctx.closePath();
+            }
         });
     }
 
@@ -113,7 +120,6 @@ export class Game {
                     height: e.clientY - this.startY
                 };
             }else if (selectShape === "circle") {
-                console.log("circle");
                 shape = {
                     type: "circle",
                     centerX: this.startX + (e.clientX - this.startX) / 2,
@@ -123,7 +129,7 @@ export class Game {
             }
             else{
                 shape = {
-                    type: "pencil",
+                    type: "line",
                     startX: this.startX,
                     startY: this.startY,
                     endX: e.clientX,
@@ -158,7 +164,14 @@ export class Game {
                 this.ctx.stroke();
                 this.ctx.closePath();
             }
+            else if(selectShape === "line"){
+                this.ctx.beginPath();
+                this.ctx.moveTo(this.startX, this.startY);
+                this.ctx.lineTo(e.clientX, e.clientY);
+                this.ctx.stroke();
+                this.ctx.closePath();
             }
+        }
 
     }
 

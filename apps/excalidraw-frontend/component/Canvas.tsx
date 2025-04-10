@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from "react";
 import IconButton from "./IconButton";
-import { Circle, Pencil, PencilIcon, RectangleHorizontalIcon } from "lucide-react";
+import { Circle, LineChart, PenLine, Pencil, PencilIcon, RectangleHorizontalIcon } from "lucide-react";
 import { Game } from "@/draw/Game";
 
 export type Shapes = "rect" | "circle" | "line" | "pencil" | "eraser" | "text";
@@ -71,7 +71,7 @@ export function TopBar({roomId, shape, setShape}: {roomId: string, setShape: (sh
             <div className="flex space-x-4">
                 <IconButton activated={shape === "circle"} icon={<Circle/>} onClick={() => {setShape("circle")}} />
                 <IconButton activated={shape === "rect"} icon={<RectangleHorizontalIcon/>} onClick={() => {setShape("rect")}} />
-                <IconButton activated={shape === "pencil"} icon={<Pencil/>} onClick={() => {setShape("pencil")}} />
+                <IconButton activated={shape === "line"} icon={<PenLine/>} onClick={() => {setShape("line")}} />
             </div>
         </div>
     );
